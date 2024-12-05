@@ -1,11 +1,20 @@
+import processing.serial.*;
+
+Serial arduino;
+
 float L1 = 80;
 float L2 = 70;
 float q1 = 70;
 float q2 = 70;
+float pos1 = 90;
+float pos2 = 90;
+float pos3 = 90;
 
 ArrayList<PVector> drawpoint = new ArrayList<PVector>();
 
 void setup(){
+  printArray(Serial.list());
+  arduino = new Serial(this,Serial.list()[1],9600);
   size(500,500);
 }
 
@@ -46,6 +55,26 @@ void draw(){
   scale(1,-1);
   textSize(20);
   text("x : y ="+x2+" : "+y2,-150,-150);
+  //q1 = 0;
+  //q2 = 90;
+  //pos1 = q1;
+  //pos2 = q2;
+  
+  if (isDrawing){
+    pos3 = 80;
+  }else{
+     pos3 = 140; 
+  }
+  pos1 = map(q1,0,180,0,180);
+  pos2 = map(q2,0,180,90,-90);
+  pos1 = constrain(pos1,0,180);
+  pos2 = constrain(pos2,0,180);
+  pos3 = constrain(pos3,0,180);
+  arduino.write(int(255));
+  arduino.write(int(pos1));
+  arduino.write(int(pos2));
+  arduino.write(int(pos3));
+  
 }
 
 void IK(float x ,float y){
@@ -89,5 +118,15 @@ boolean calculateWorkspace(float x,float y){
   if(r>(L1+L2)){
     return false;
   }
+  if(q1<-90 || q1>90 || q2<2 ||q2 > 180){
+    return false;
+  }
   return true;
+}
+
+void serialEvent(Serial P){
+  if(arduino.available()>0){
+    int data = arduino.read();
+    println(data);
+  }
 }
